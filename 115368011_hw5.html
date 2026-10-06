@@ -1,0 +1,3202 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的記帳本</title>
+
+    <style>
+        :root {
+            --bg: #0f1115;
+            --card: #171a21;
+            --card2: #1d212a;
+            --border: #2a2f3a;
+            --text: #f2f4f7;
+            --muted: #8e96a3;
+            --blue: #4f8cff;
+            --green: #36d399;
+            --red: #ff647c;
+            --yellow: #f5c451;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                "Noto Sans TC",
+                Arial,
+                sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .container {
+            width: min(1200px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        /* =========================
+   Header
+========================= */
+
+        header {
+            padding: 28px 0 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .logo-sub {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 16px;
+            color: var(--white);
+            background: var(--card2);
+            border: 1px solid var(--border);
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            filter: brightness(1.15);
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            border-color: var(--blue);
+        }
+
+        .btn-danger {
+            background: var(--red);
+            border-color: var(--red);
+        }
+
+        .btn-success {
+            background: var(--green);
+            border-color: var(--green);
+            color: #07130e;
+        }
+
+        .btn-small {
+            padding: 7px 10px;
+            font-size: 13px;
+        }
+
+        /* =========================
+   Dashboard
+========================= */
+
+        main {
+            padding: 25px 0 50px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .summary-title {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .income {
+            color: var(--green);
+        }
+
+        .expense {
+            color: var(--red);
+        }
+
+        .balance {
+            color: var(--blue);
+        }
+
+        /* =========================
+   Section
+========================= */
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 17px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .section-content {
+            padding: 20px;
+        }
+
+        /* =========================
+   Today list
+========================= */
+
+        .record-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .record-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--card2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .record-info {
+            min-width: 0;
+        }
+
+        .record-category {
+            font-weight: 600;
+        }
+
+        .record-note {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .record-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .record-amount {
+            font-weight: 700;
+        }
+
+        .record-date {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* =========================
+   Dashboard two columns
+========================= */
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* =========================
+   Donut chart
+========================= */
+
+        .chart-box {
+            position: relative;
+            min-height: 300px;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .donut-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .donut-center {
+            position: absolute;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .donut-center-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .donut-center-label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .legend {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .legend-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        /* =========================
+   Bar chart
+========================= */
+
+        .chart-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 12px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: 8px;
+        }
+
+        .tab.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+
+        .bar-chart {
+            width: 100%;
+            height: 260px;
+        }
+
+        /* =========================
+   Recent records
+========================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* =========================
+   Empty
+========================= */
+
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 35px 10px;
+        }
+
+        /* =========================
+   Modal
+========================= */
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal {
+            width: min(600px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+        }
+
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 24px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* =========================
+   Form
+========================= */
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--text);
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--blue);
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .type-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .type-btn {
+            padding: 11px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--card2);
+            color: var(--muted);
+        }
+
+        .type-btn.active.income-btn {
+            background: rgba(54, 211, 153, 0.15);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .type-btn.active.expense-btn {
+            background: rgba(255, 100, 124, 0.15);
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* =========================
+   Category Management
+========================= */
+
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .category-tab {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card2);
+            color: var(--muted);
+        }
+
+        .category-tab.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+        }
+
+        .category-name {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .default-label {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* =========================
+   Toast
+========================= */
+
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #252a34;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 11px 17px;
+            border-radius: 9px;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.25s;
+            z-index: 3000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* =========================
+   Responsive
+========================= */
+
+        @media (max-width: 850px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: min(100% - 20px, 1200px);
+            }
+
+            .header-inner {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+
+            .section-content {
+                padding: 15px;
+            }
+
+            .summary-value {
+                font-size: 24px;
+            }
+
+            .record-item {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="container header-inner">
+
+            <div>
+                <div class="logo">我的記帳本</div>
+                <div class="logo-sub">簡單記錄每一筆收支</div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn" onclick="openCategoryManager()">
+                    ⚙️ 分類管理
+                </button>
+
+                <button class="btn btn-primary" onclick="openEntry()">
+                    ＋ 新增記帳
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+
+    <main>
+        <div class="container">
+
+            <!-- Summary -->
+            <div class="summary-grid">
+
+                <div class="summary-card">
+                    <div class="summary-title">本月收入</div>
+                    <div class="summary-value income" id="monthIncome">
+                        NT$ 0
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-title">本月支出</div>
+                    <div class="summary-value expense" id="monthExpense">
+                        NT$ 0
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-title">本月結餘</div>
+                    <div class="summary-value balance" id="monthBalance">
+                        NT$ 0
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Today -->
+            <div class="section">
+
+                <div class="section-header">
+                    <div class="section-title">今日支出</div>
+                    <div id="todayTotal" class="expense">
+                        NT$ 0
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    <div class="record-list" id="todayList"></div>
+                </div>
+
+            </div>
+
+
+            <!-- Charts -->
+            <div class="dashboard-grid">
+
+                <!-- Category statistics -->
+                <div class="section">
+
+                    <div class="section-header">
+                        <div class="section-title">本月分類統計</div>
+                    </div>
+
+                    <div class="section-content">
+
+                        <div class="donut-wrapper">
+
+                            <canvas id="donutChart" width="280" height="280">
+                            </canvas>
+
+                            <div class="donut-center">
+                                <div class="donut-center-value" id="donutTotal">
+                                    NT$ 0
+                                </div>
+
+                                <div class="donut-center-label">
+                                    本月支出
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="legend" id="legend"></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Daily / monthly statistics -->
+                <div class="section">
+
+                    <div class="section-header">
+                        <div class="section-title">支出統計</div>
+                    </div>
+
+                    <div class="section-content">
+
+                        <div class="chart-tabs">
+
+                            <button class="tab active" id="dailyTab" onclick="setChartMode('daily')">
+                                每日
+                            </button>
+
+                            <button class="tab" id="monthlyTab" onclick="setChartMode('monthly')">
+                                每月
+                            </button>
+
+                        </div>
+
+                        <canvas id="barChart" class="bar-chart">
+                        </canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Recent records -->
+            <div class="section">
+
+                <div class="section-header">
+
+                    <div class="section-title">
+                        最近 5 筆
+                    </div>
+
+                    <button class="btn btn-small" onclick="openAllRecords()">
+                        查看全部
+                    </button>
+
+                </div>
+
+                <div class="section-content">
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>類型</th>
+                                    <th>分類</th>
+                                    <th>備註</th>
+                                    <th>金額</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="recentTable"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+
+    <!-- =========================
+     Add / Edit Modal
+========================= -->
+
+    <div class="modal-backdrop" id="entryModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div class="modal-title" id="entryTitle">
+                    新增記帳
+                </div>
+
+                <button class="close-btn" onclick="closeEntry()">
+                    ×
+                </button>
+
+            </div>
+
+            <form id="entryForm">
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="editId">
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            收入／支出
+                        </label>
+
+                        <div class="type-switch">
+
+                            <button type="button" class="type-btn active income-btn" id="incomeBtn"
+                                onclick="setType('income')">
+                                收入
+                            </button>
+
+                            <button type="button" class="type-btn expense-btn" id="expenseBtn"
+                                onclick="setType('expense')">
+                                支出
+                            </button>
+
+                        </div>
+
+                        <input type="hidden" id="recordType" value="expense">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            日期
+                        </label>
+
+                        <input type="date" id="recordDate" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            金額
+                        </label>
+
+                        <input type="number" id="recordAmount" min="1" step="1" placeholder="例如：100" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            分類
+                        </label>
+
+                        <select id="recordCategory" required>
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            備註
+                        </label>
+
+                        <textarea id="recordNote" placeholder="例如：午餐、捷運、買衣服……">
+                    </textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="btn" onclick="closeEntry()">
+                        取消
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        儲存
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+     Delete Modal
+========================= -->
+
+    <div class="modal-backdrop" id="deleteModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div class="modal-title">
+                    確定刪除？
+                </div>
+
+                <button class="close-btn" onclick="closeDelete()">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <p style="color:var(--muted);">
+                    刪除後將無法復原，確定要刪除這筆記錄嗎？
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn" onclick="closeDelete()">
+                    取消
+                </button>
+
+                <button class="btn btn-danger" onclick="confirmDelete()">
+                    確定刪除
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+     All Records Modal
+========================= -->
+
+    <div class="modal-backdrop" id="allRecordsModal">
+
+        <div class="modal" style="width:min(1000px,100%)">
+
+            <div class="modal-header">
+
+                <div class="modal-title">
+                    所有記帳紀錄
+                </div>
+
+                <button class="close-btn" onclick="closeAllRecords()">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>類型</th>
+                                <th>分類</th>
+                                <th>備註</th>
+                                <th>金額</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="allRecordsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+     Category Manager
+========================= -->
+
+    <div class="modal-backdrop" id="categoryModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div class="modal-title">
+                    分類管理
+                </div>
+
+                <button class="close-btn" onclick="closeCategoryManager()">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="category-tabs">
+
+                    <button class="category-tab active" id="expenseCategoryTab"
+                        onclick="setCategoryManagerType('expense')">
+                        支出分類
+                    </button>
+
+                    <button class="category-tab" id="incomeCategoryTab" onclick="setCategoryManagerType('income')">
+                        收入分類
+                    </button>
+
+                </div>
+
+
+                <div style="
+                    display:flex;
+                    gap:8px;
+                    margin-bottom:18px;
+                ">
+
+                    <input id="newCategoryName" placeholder="輸入新的分類名稱">
+
+                    <button class="btn btn-primary" onclick="addCategory()">
+                        ＋ 新增
+                    </button>
+
+                </div>
+
+
+                <div class="category-list" id="categoryManagerList">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+     Edit Category Modal
+========================= -->
+
+    <div class="modal-backdrop" id="editCategoryModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div class="modal-title">
+                    修改分類
+                </div>
+
+                <button class="close-btn" onclick="closeEditCategory()">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="editCategoryOldName">
+
+                <div class="form-group">
+
+                    <label class="form-label">
+                        新分類名稱
+                    </label>
+
+                    <input id="editCategoryName" placeholder="輸入分類名稱">
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn" onclick="closeEditCategory()">
+                    取消
+                </button>
+
+                <button class="btn btn-primary" onclick="saveEditedCategory()">
+                    儲存
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="toast" id="toast"></div>
+
+
+    <script>
+
+        /* =========================================================
+           LocalStorage
+        ========================================================= */
+
+        const RECORD_KEY = "simpleExpenseTracker_v2";
+        const CATEGORY_KEY = "simpleExpenseTracker_categories_v2";
+
+
+        /* =========================================================
+           Default categories
+        ========================================================= */
+
+        const DEFAULT_CATEGORIES = {
+
+            income: [
+                "薪資",
+                "禮金",
+                "其他收入"
+            ],
+
+            expense: [
+                "飲食",
+                "交通",
+                "購物",
+                "娛樂",
+                "學習",
+                "生活",
+                "旅遊",
+                "其他"
+            ]
+
+        };
+
+
+        /* =========================================================
+           State
+        ========================================================= */
+
+        let records = loadJSON(RECORD_KEY, []);
+
+        let categories = loadJSON(
+            CATEGORY_KEY,
+            {
+                income: [...DEFAULT_CATEGORIES.income],
+                expense: [...DEFAULT_CATEGORIES.expense]
+            }
+        );
+
+        let currentType = "expense";
+
+        let deleteTargetId = null;
+
+        let categoryManagerType = "expense";
+
+        let chartMode = "daily";
+
+
+        /* =========================================================
+           Utility
+        ========================================================= */
+
+        function loadJSON(key, fallback) {
+
+            try {
+
+                const data = localStorage.getItem(key);
+
+                if (!data) {
+                    return fallback;
+                }
+
+                return JSON.parse(data);
+
+            } catch (error) {
+
+                console.error(error);
+
+                return fallback;
+            }
+        }
+
+
+        function saveRecords() {
+
+            localStorage.setItem(
+                RECORD_KEY,
+                JSON.stringify(records)
+            );
+        }
+
+
+        function saveCategories() {
+
+            localStorage.setItem(
+                CATEGORY_KEY,
+                JSON.stringify(categories)
+            );
+        }
+
+
+        function todayISO() {
+
+            const d = new Date();
+
+            const offset =
+                d.getTimezoneOffset() * 60000;
+
+            return new Date(
+                d.getTime() - offset
+            ).toISOString().slice(0, 10);
+        }
+
+
+        function formatMoney(number) {
+
+            return "NT$ " +
+                Number(number || 0).toLocaleString("zh-TW");
+        }
+
+
+        function formatDate(dateString) {
+
+            if (!dateString) return "";
+
+            const [y, m, d] =
+                dateString.split("-");
+
+            return `${y}/${m}/${d}`;
+        }
+
+
+        function generateId() {
+
+            return Date.now().toString() +
+                Math.random()
+                    .toString(36)
+                    .slice(2, 8);
+        }
+
+
+        function sortRecords() {
+
+            return [...records].sort(
+                (a, b) => {
+
+                    if (a.date !== b.date) {
+
+                        return b.date.localeCompare(a.date);
+                    }
+
+                    return (b.createdAt || 0) -
+                        (a.createdAt || 0);
+                }
+            );
+        }
+
+
+        /* =========================================================
+           Category utilities
+        ========================================================= */
+
+        function normalizeCategories() {
+
+            if (!categories ||
+                typeof categories !== "object") {
+
+                categories = {
+                    income: [...DEFAULT_CATEGORIES.income],
+                    expense: [...DEFAULT_CATEGORIES.expense]
+                };
+            }
+
+            categories.income =
+                Array.isArray(categories.income)
+                    ? categories.income
+                    : [];
+
+            categories.expense =
+                Array.isArray(categories.expense)
+                    ? categories.expense
+                    : [];
+
+
+            for (const type of ["income", "expense"]) {
+
+                DEFAULT_CATEGORIES[type].forEach(
+                    category => {
+
+                        if (!categories[type].includes(category)) {
+
+                            categories[type].unshift(category);
+                        }
+
+                    }
+                );
+
+            }
+
+            saveCategories();
+        }
+
+
+        function isDefaultCategory(type, name) {
+
+            return DEFAULT_CATEGORIES[type]
+                .includes(name);
+        }
+
+
+        /* =========================================================
+           Initial
+        ========================================================= */
+
+        normalizeCategories();
+
+        document
+            .getElementById("recordDate")
+            .value = todayISO();
+
+
+        /* =========================================================
+           Render all
+        ========================================================= */
+
+        function render() {
+
+            renderSummary();
+
+            renderToday();
+
+            renderDonut();
+
+            renderChart();
+
+            renderRecent();
+
+            populateCategories();
+
+            renderAllRecords();
+
+            renderCategoryManager();
+        }
+
+
+        /* =========================================================
+           Summary
+        ========================================================= */
+
+        function renderSummary() {
+
+            const now = new Date();
+
+            const year =
+                now.getFullYear();
+
+            const month =
+                String(now.getMonth() + 1)
+                    .padStart(2, "0");
+
+            const prefix =
+                `${year}-${month}`;
+
+            let income = 0;
+
+            let expense = 0;
+
+            records.forEach(record => {
+
+                if (!record.date.startsWith(prefix)) {
+                    return;
+                }
+
+                if (record.type === "income") {
+
+                    income += Number(record.amount);
+
+                } else {
+
+                    expense += Number(record.amount);
+
+                }
+
+            });
+
+            document
+                .getElementById("monthIncome")
+                .textContent = formatMoney(income);
+
+            document
+                .getElementById("monthExpense")
+                .textContent = formatMoney(expense);
+
+            document
+                .getElementById("monthBalance")
+                .textContent = formatMoney(
+                    income - expense
+                );
+        }
+
+
+        /* =========================================================
+           Today's records
+        ========================================================= */
+
+        function renderToday() {
+
+            const today = todayISO();
+
+            const todayRecords =
+                sortRecords().filter(
+                    record =>
+                        record.date === today &&
+                        record.type === "expense"
+                );
+
+            const total =
+                todayRecords.reduce(
+                    (sum, record) =>
+                        sum + Number(record.amount),
+                    0
+                );
+
+            document
+                .getElementById("todayTotal")
+                .textContent = formatMoney(total);
+
+
+            const container =
+                document.getElementById("todayList");
+
+
+            if (todayRecords.length === 0) {
+
+                container.innerHTML = `
+            <div class="empty">
+                今天還沒有支出紀錄
+            </div>
+        `;
+
+                return;
+            }
+
+
+            container.innerHTML =
+                todayRecords.map(
+                    record => {
+
+                        return `
+                    <div class="record-item">
+
+                        <div class="record-left">
+
+                            <div class="record-icon">
+                                💸
+                            </div>
+
+                            <div class="record-info">
+
+                                <div class="record-category">
+                                    ${escapeHTML(record.category)}
+                                </div>
+
+                                <div class="record-note">
+                                    ${escapeHTML(record.note || "無備註")}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="record-right">
+
+                            <div class="record-amount expense">
+                                -${formatMoney(record.amount)}
+                            </div>
+
+                            <div class="record-date">
+                                ${formatDate(record.date)}
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+                    }
+                ).join("");
+        }
+
+
+        /* =========================================================
+           Donut chart
+        ========================================================= */
+
+        function renderDonut() {
+
+            const canvas =
+                document.getElementById("donutChart");
+
+            const ctx =
+                canvas.getContext("2d");
+
+            const rect =
+                canvas.getBoundingClientRect();
+
+            const size =
+                Math.min(
+                    rect.width || 280,
+                    280
+                );
+
+            const dpr =
+                window.devicePixelRatio || 1;
+
+            canvas.width =
+                size * dpr;
+
+            canvas.height =
+                size * dpr;
+
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(
+                0,
+                0,
+                size,
+                size
+            );
+
+
+            const now = new Date();
+
+            const prefix =
+                `${now.getFullYear()}-${String(
+                    now.getMonth() + 1
+                ).padStart(2, "0")}`;
+
+
+            const categoryData = {};
+
+            records.forEach(record => {
+
+                if (
+                    record.type !== "expense" ||
+                    !record.date.startsWith(prefix)
+                ) {
+                    return;
+                }
+
+                const category =
+                    record.category || "其他";
+
+                categoryData[category] =
+                    (categoryData[category] || 0) +
+                    Number(record.amount);
+
+            });
+
+
+            const data =
+                Object.entries(categoryData)
+                    .sort((a, b) => b[1] - a[1]);
+
+
+            const total =
+                data.reduce(
+                    (sum, item) => sum + item[1],
+                    0
+                );
+
+
+            document
+                .getElementById("donutTotal")
+                .textContent = formatMoney(total);
+
+
+            const center =
+                size / 2;
+
+            const radius =
+                size * 0.33;
+
+            const lineWidth =
+                size * 0.12;
+
+
+            const colors = [
+                "#4f8cff",
+                "#36d399",
+                "#ff647c",
+                "#f5c451",
+                "#a78bfa",
+                "#fb923c",
+                "#22d3ee",
+                "#f472b6",
+                "#94a3b8"
+            ];
+
+
+            if (total === 0) {
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    center,
+                    center,
+                    radius,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.strokeStyle =
+                    "#2a2f3a";
+
+                ctx.lineWidth =
+                    lineWidth;
+
+                ctx.stroke();
+
+            } else {
+
+                let startAngle =
+                    -Math.PI / 2;
+
+
+                data.forEach(
+                    (item, index) => {
+
+                        const value =
+                            item[1];
+
+                        const angle =
+                            (value / total) *
+                            Math.PI * 2;
+
+                        ctx.beginPath();
+
+                        ctx.arc(
+                            center,
+                            center,
+                            radius,
+                            startAngle,
+                            startAngle + angle
+                        );
+
+                        ctx.strokeStyle =
+                            colors[index % colors.length];
+
+                        ctx.lineWidth =
+                            lineWidth;
+
+                        ctx.stroke();
+
+                        startAngle += angle;
+                    }
+                );
+
+            }
+
+
+            const legend =
+                document.getElementById("legend");
+
+
+            if (data.length === 0) {
+
+                legend.innerHTML = `
+            <div class="empty">
+                本月還沒有支出資料
+            </div>
+        `;
+
+                return;
+            }
+
+
+            legend.innerHTML =
+                data.map(
+                    (item, index) => {
+
+                        const percentage =
+                            total === 0
+                                ? 0
+                                : (
+                                    item[1] /
+                                    total *
+                                    100
+                                ).toFixed(1);
+
+                        return `
+                    <div class="legend-item">
+
+                        <div class="legend-left">
+
+                            <span
+                                class="legend-dot"
+                                style="
+                                    background:
+                                    ${colors[index % colors.length]}
+                                ">
+                            </span>
+
+                            <span>
+                                ${escapeHTML(item[0])}
+                            </span>
+
+                        </div>
+
+                        <span>
+                            ${formatMoney(item[1])}
+                            (${percentage}%)
+                        </span>
+
+                    </div>
+                `;
+                    }
+                ).join("");
+        }
+
+
+        /* =========================================================
+           Bar chart
+        ========================================================= */
+
+        function setChartMode(mode) {
+
+            chartMode = mode;
+
+            document
+                .getElementById("dailyTab")
+                .classList.toggle(
+                    "active",
+                    mode === "daily"
+                );
+
+            document
+                .getElementById("monthlyTab")
+                .classList.toggle(
+                    "active",
+                    mode === "monthly"
+                );
+
+            renderChart();
+        }
+
+
+        function renderChart() {
+
+            const canvas =
+                document.getElementById("barChart");
+
+            const ctx =
+                canvas.getContext("2d");
+
+            const width =
+                canvas.clientWidth || 500;
+
+            const height = 260;
+
+            const dpr =
+                window.devicePixelRatio || 1;
+
+            canvas.width =
+                width * dpr;
+
+            canvas.height =
+                height * dpr;
+
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            let data = [];
+
+
+            if (chartMode === "daily") {
+
+                const now =
+                    new Date();
+
+                const year =
+                    now.getFullYear();
+
+                const month =
+                    now.getMonth();
+
+                const days =
+                    new Date(
+                        year,
+                        month + 1,
+                        0
+                    ).getDate();
+
+
+                for (
+                    let day = 1;
+                    day <= days;
+                    day++
+                ) {
+
+                    const date =
+                        `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+                    const value =
+                        records
+                            .filter(
+                                r =>
+                                    r.type === "expense" &&
+                                    r.date === date
+                            )
+                            .reduce(
+                                (sum, r) =>
+                                    sum + Number(r.amount),
+                                0
+                            );
+
+                    data.push({
+                        label: String(day),
+                        value
+                    });
+
+                }
+
+            } else {
+
+                const now =
+                    new Date();
+
+                const currentYear =
+                    now.getFullYear();
+
+                for (
+                    let month = 0;
+                    month < 12;
+                    month++
+                ) {
+
+                    const prefix =
+                        `${currentYear}-${String(month + 1).padStart(2, "0")}`;
+
+                    const value =
+                        records
+                            .filter(
+                                r =>
+                                    r.type === "expense" &&
+                                    r.date.startsWith(prefix)
+                            )
+                            .reduce(
+                                (sum, r) =>
+                                    sum + Number(r.amount),
+                                0
+                            );
+
+                    data.push({
+                        label: `${month + 1}月`,
+                        value
+                    });
+
+                }
+
+            }
+
+
+            const padding = {
+                top: 20,
+                right: 15,
+                bottom: 40,
+                left: 55
+            };
+
+
+            const chartWidth =
+                width -
+                padding.left -
+                padding.right;
+
+            const chartHeight =
+                height -
+                padding.top -
+                padding.bottom;
+
+
+            const maxValue =
+                Math.max(
+                    ...data.map(item => item.value),
+                    1
+                );
+
+
+            /* Grid */
+
+            ctx.strokeStyle =
+                "#2a2f3a";
+
+            ctx.lineWidth = 1;
+
+
+            for (
+                let i = 0;
+                i <= 4;
+                i++
+            ) {
+
+                const y =
+                    padding.top +
+                    chartHeight -
+                    (chartHeight * i / 4);
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    padding.left,
+                    y
+                );
+
+                ctx.lineTo(
+                    width - padding.right,
+                    y
+                );
+
+                ctx.stroke();
+
+
+                ctx.fillStyle =
+                    "#8e96a3";
+
+                ctx.font =
+                    "11px Arial";
+
+                const value =
+                    maxValue * i / 4;
+
+                ctx.fillText(
+                    Math.round(value).toLocaleString(),
+                    5,
+                    y + 4
+                );
+
+            }
+
+
+            const gap =
+                3;
+
+            const barWidth =
+                Math.max(
+                    2,
+                    chartWidth /
+                    data.length -
+                    gap
+                );
+
+
+            data.forEach(
+                (item, index) => {
+
+                    const barHeight =
+                        item.value /
+                        maxValue *
+                        chartHeight;
+
+                    const x =
+                        padding.left +
+                        index *
+                        (chartWidth / data.length) +
+                        gap / 2;
+
+                    const y =
+                        padding.top +
+                        chartHeight -
+                        barHeight;
+
+
+                    ctx.fillStyle =
+                        "#4f8cff";
+
+                    ctx.fillRect(
+                        x,
+                        y,
+                        barWidth,
+                        barHeight
+                    );
+
+
+                    if (
+                        index % (
+                            chartMode === "daily"
+                                ? 3
+                                : 1
+                        ) === 0
+                    ) {
+
+                        ctx.fillStyle =
+                            "#8e96a3";
+
+                        ctx.font =
+                            "10px Arial";
+
+                        ctx.textAlign =
+                            "center";
+
+                        ctx.fillText(
+                            item.label,
+                            x + barWidth / 2,
+                            height - 15
+                        );
+
+                    }
+
+                }
+            );
+
+            ctx.textAlign = "left";
+        }
+
+
+        /* =========================================================
+           Recent records
+        ========================================================= */
+
+        function renderRecent() {
+
+            const tbody =
+                document.getElementById("recentTable");
+
+            const data =
+                sortRecords().slice(0, 5);
+
+
+            if (data.length === 0) {
+
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty">
+                        尚未有任何記帳紀錄
+                    </div>
+                </td>
+            </tr>
+        `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                data.map(recordRow).join("");
+        }
+
+
+        function renderAllRecords() {
+
+            const tbody =
+                document.getElementById(
+                    "allRecordsTable"
+                );
+
+            if (!tbody) return;
+
+
+            const data =
+                sortRecords();
+
+
+            if (data.length === 0) {
+
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty">
+                        尚未有任何記帳紀錄
+                    </div>
+                </td>
+            </tr>
+        `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                data.map(recordRow).join("");
+        }
+
+
+        function recordRow(record) {
+
+            const isIncome =
+                record.type === "income";
+
+
+            return `
+        <tr>
+
+            <td>
+                ${formatDate(record.date)}
+            </td>
+
+            <td class="${isIncome ? "income" : "expense"}">
+                ${isIncome ? "收入" : "支出"}
+            </td>
+
+            <td>
+                ${escapeHTML(record.category)}
+            </td>
+
+            <td>
+                ${escapeHTML(record.note || "-")}
+            </td>
+
+            <td class="${isIncome ? "income" : "expense"}">
+                ${isIncome ? "+" : "-"}${formatMoney(record.amount)}
+            </td>
+
+            <td>
+
+                <div class="table-actions">
+
+                    <button
+                        class="btn btn-small"
+                        onclick="editRecord('${record.id}')">
+                        編輯
+                    </button>
+
+                    <button
+                        class="btn btn-small"
+                        onclick="askDelete('${record.id}')">
+                        刪除
+                    </button>
+
+                </div>
+
+            </td>
+
+        </tr>
+    `;
+        }
+
+
+        /* =========================================================
+           Add / Edit
+        ========================================================= */
+
+        function openEntry(id = null) {
+
+            const modal =
+                document.getElementById(
+                    "entryModal"
+                );
+
+            document
+                .getElementById("entryForm")
+                .reset();
+
+
+            if (id) {
+
+                const record =
+                    records.find(
+                        r => r.id === id
+                    );
+
+                if (!record) return;
+
+
+                document
+                    .getElementById("entryTitle")
+                    .textContent =
+                    "編輯記帳";
+
+
+                document
+                    .getElementById("editId")
+                    .value =
+                    record.id;
+
+
+                document
+                    .getElementById("recordDate")
+                    .value =
+                    record.date;
+
+
+                document
+                    .getElementById("recordAmount")
+                    .value =
+                    record.amount;
+
+
+                document
+                    .getElementById("recordNote")
+                    .value =
+                    record.note || "";
+
+
+                setType(record.type);
+
+                populateCategories();
+
+                document
+                    .getElementById("recordCategory")
+                    .value =
+                    record.category;
+
+
+            } else {
+
+                document
+                    .getElementById("entryTitle")
+                    .textContent =
+                    "新增記帳";
+
+
+                document
+                    .getElementById("editId")
+                    .value = "";
+
+
+                document
+                    .getElementById("recordDate")
+                    .value =
+                    todayISO();
+
+
+                setType("expense");
+
+                populateCategories();
+
+            }
+
+
+            modal.classList.add("show");
+        }
+
+
+        function closeEntry() {
+
+            document
+                .getElementById("entryModal")
+                .classList.remove("show");
+        }
+
+
+        function setType(type) {
+
+            currentType = type;
+
+            document
+                .getElementById("recordType")
+                .value =
+                type;
+
+
+            document
+                .getElementById("incomeBtn")
+                .classList.toggle(
+                    "active",
+                    type === "income"
+                );
+
+
+            document
+                .getElementById("expenseBtn")
+                .classList.toggle(
+                    "active",
+                    type === "expense"
+                );
+
+
+            populateCategories();
+        }
+
+
+        function populateCategories() {
+
+            const select =
+                document.getElementById(
+                    "recordCategory"
+                );
+
+            if (!select) return;
+
+
+            const list =
+                categories[currentType] || [];
+
+
+            select.innerHTML =
+                list.map(
+                    category =>
+                        `<option value="${escapeAttribute(category)}">
+                    ${escapeHTML(category)}
+                </option>`
+                ).join("");
+        }
+
+
+        document
+            .getElementById("entryForm")
+            .addEventListener(
+                "submit",
+                function (event) {
+
+                    event.preventDefault();
+
+
+                    const id =
+                        document
+                            .getElementById("editId")
+                            .value;
+
+
+                    const record = {
+
+                        id:
+                            id ||
+                            generateId(),
+
+                        date:
+                            document
+                                .getElementById("recordDate")
+                                .value,
+
+                        amount:
+                            Number(
+                                document
+                                    .getElementById("recordAmount")
+                                    .value
+                            ),
+
+                        type:
+                            document
+                                .getElementById("recordType")
+                                .value,
+
+                        category:
+                            document
+                                .getElementById("recordCategory")
+                                .value,
+
+                        note:
+                            document
+                                .getElementById("recordNote")
+                                .value
+                                .trim(),
+
+                        createdAt:
+                            Date.now()
+
+                    };
+
+
+                    if (!record.date) {
+
+                        showToast(
+                            "請選擇日期"
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        !record.amount ||
+                        record.amount <= 0
+                    ) {
+
+                        showToast(
+                            "金額必須大於 0"
+                        );
+
+                        return;
+                    }
+
+
+                    if (!record.category) {
+
+                        showToast(
+                            "請選擇分類"
+                        );
+
+                        return;
+                    }
+
+
+                    if (id) {
+
+                        const index =
+                            records.findIndex(
+                                r => r.id === id
+                            );
+
+                        if (index !== -1) {
+
+                            record.createdAt =
+                                records[index].createdAt ||
+                                Date.now();
+
+                            records[index] =
+                                record;
+                        }
+
+                        showToast(
+                            "記帳已更新"
+                        );
+
+                    } else {
+
+                        records.push(record);
+
+                        showToast(
+                            "記帳新增成功"
+                        );
+                    }
+
+
+                    saveRecords();
+
+                    closeEntry();
+
+                    render();
+
+                }
+            );
+
+
+        /* =========================================================
+           Delete
+        ========================================================= */
+
+        function askDelete(id) {
+
+            deleteTargetId = id;
+
+            document
+                .getElementById("deleteModal")
+                .classList.add("show");
+        }
+
+
+        function closeDelete() {
+
+            deleteTargetId = null;
+
+            document
+                .getElementById("deleteModal")
+                .classList.remove("show");
+        }
+
+
+        function confirmDelete() {
+
+            if (!deleteTargetId) return;
+
+
+            records =
+                records.filter(
+                    record =>
+                        record.id !== deleteTargetId
+                );
+
+
+            saveRecords();
+
+            closeDelete();
+
+            render();
+
+            showToast(
+                "記帳已刪除"
+            );
+        }
+
+
+        /* =========================================================
+           All records
+        ========================================================= */
+
+        function openAllRecords() {
+
+            renderAllRecords();
+
+            document
+                .getElementById("allRecordsModal")
+                .classList.add("show");
+        }
+
+
+        function closeAllRecords() {
+
+            document
+                .getElementById("allRecordsModal")
+                .classList.remove("show");
+        }
+
+
+        /* =========================================================
+           Category Manager
+        ========================================================= */
+
+        function openCategoryManager() {
+
+            categoryManagerType =
+                "expense";
+
+            document
+                .getElementById("categoryModal")
+                .classList.add("show");
+
+            setCategoryManagerType("expense");
+
+        }
+
+
+        function closeCategoryManager() {
+
+            document
+                .getElementById("categoryModal")
+                .classList.remove("show");
+        }
+
+
+        function setCategoryManagerType(type) {
+
+            categoryManagerType =
+                type;
+
+
+            document
+                .getElementById(
+                    "expenseCategoryTab"
+                )
+                .classList.toggle(
+                    "active",
+                    type === "expense"
+                );
+
+
+            document
+                .getElementById(
+                    "incomeCategoryTab"
+                )
+                .classList.toggle(
+                    "active",
+                    type === "income"
+                );
+
+
+            document
+                .getElementById(
+                    "newCategoryName"
+                )
+                .value = "";
+
+
+            renderCategoryManager();
+        }
+
+
+        function renderCategoryManager() {
+
+            const container =
+                document.getElementById(
+                    "categoryManagerList"
+                );
+
+            if (!container) return;
+
+
+            const type =
+                categoryManagerType;
+
+
+            const list =
+                categories[type] || [];
+
+
+            container.innerHTML =
+                list.map(
+                    category => {
+
+                        const isDefault =
+                            isDefaultCategory(
+                                type,
+                                category
+                            );
+
+
+                        return `
+                    <div class="category-item">
+
+                        <div class="category-name">
+
+                            <span>
+                                ${type === "expense"
+                                ? "💸"
+                                : "💰"}
+                            </span>
+
+                            <span>
+                                ${escapeHTML(category)}
+                            </span>
+
+                            ${isDefault
+                                ? `
+                                    <span class="default-label">
+                                        預設
+                                    </span>
+                                `
+                                : ""
+                            }
+
+                        </div>
+
+
+                        <div class="category-actions">
+
+                            ${isDefault
+                                ? ""
+                                : `
+                                    <button
+                                        class="btn btn-small"
+                                        onclick="editCategory('${escapeAttribute(category)}')">
+                                        修改
+                                    </button>
+
+                                    <button
+                                        class="btn btn-small"
+                                        onclick="deleteCategory('${escapeAttribute(category)}')">
+                                        刪除
+                                    </button>
+                                `
+                            }
+
+                        </div>
+
+                    </div>
+                `;
+                    }
+                ).join("");
+        }
+
+
+        function addCategory() {
+
+            const input =
+                document.getElementById(
+                    "newCategoryName"
+                );
+
+
+            const name =
+                input.value.trim();
+
+
+            if (!name) {
+
+                showToast(
+                    "請輸入分類名稱"
+                );
+
+                return;
+            }
+
+
+            if (name.length > 20) {
+
+                showToast(
+                    "分類名稱不能超過 20 個字"
+                );
+
+                return;
+            }
+
+
+            if (
+                categories[
+                    categoryManagerType
+                ].includes(name)
+            ) {
+
+                showToast(
+                    "這個分類已經存在"
+                );
+
+                return;
+            }
+
+
+            categories[
+                categoryManagerType
+            ].push(name);
+
+
+            saveCategories();
+
+            input.value = "";
+
+            renderCategoryManager();
+
+            populateCategories();
+
+            showToast(
+                "分類新增成功"
+            );
+        }
+
+
+        function editCategory(name) {
+
+            document
+                .getElementById(
+                    "editCategoryOldName"
+                )
+                .value =
+                name;
+
+
+            document
+                .getElementById(
+                    "editCategoryName"
+                )
+                .value =
+                name;
+
+
+            document
+                .getElementById(
+                    "editCategoryModal"
+                )
+                .classList.add("show");
+        }
+
+
+        function closeEditCategory() {
+
+            document
+                .getElementById(
+                    "editCategoryModal"
+                )
+                .classList.remove("show");
+        }
+
+
+        function saveEditedCategory() {
+
+            const oldName =
+                document
+                    .getElementById(
+                        "editCategoryOldName"
+                    )
+                    .value;
+
+
+            const newName =
+                document
+                    .getElementById(
+                        "editCategoryName"
+                    )
+                    .value
+                    .trim();
+
+
+            if (!newName) {
+
+                showToast(
+                    "請輸入分類名稱"
+                );
+
+                return;
+            }
+
+
+            if (newName.length > 20) {
+
+                showToast(
+                    "分類名稱不能超過 20 個字"
+                );
+
+                return;
+            }
+
+
+            if (
+                newName !== oldName &&
+                categories[
+                    categoryManagerType
+                ].includes(newName)
+            ) {
+
+                showToast(
+                    "這個分類已經存在"
+                );
+
+                return;
+            }
+
+
+            const index =
+                categories[
+                    categoryManagerType
+                ].indexOf(oldName);
+
+
+            if (index === -1) return;
+
+
+            categories[
+                categoryManagerType
+            ][index] =
+                newName;
+
+
+            /*
+               同時更新原本已經使用
+               這個分類的記帳紀錄
+            */
+
+            records.forEach(record => {
+
+                if (
+                    record.type === categoryManagerType &&
+                    record.category === oldName
+                ) {
+
+                    record.category =
+                        newName;
+                }
+
+            });
+
+
+            saveCategories();
+
+            saveRecords();
+
+            closeEditCategory();
+
+            render();
+
+            showToast(
+                "分類修改成功"
+            );
+        }
+
+
+        function deleteCategory(name) {
+
+            if (
+                isDefaultCategory(
+                    categoryManagerType,
+                    name
+                )
+            ) {
+
+                showToast(
+                    "預設分類不能刪除"
+                );
+
+                return;
+            }
+
+
+            /*
+               如果這個分類已經被記帳紀錄使用，
+               刪除時自動轉移到「其他」
+            */
+
+            const used =
+                records.some(
+                    record =>
+                        record.type === categoryManagerType &&
+                        record.category === name
+                );
+
+
+            if (used) {
+
+                const confirmResult =
+                    confirm(
+                        `「${name}」已經有記帳紀錄。\n\n刪除後，相關紀錄會自動改為「其他」。\n\n確定要刪除嗎？`
+                    );
+
+
+                if (!confirmResult) {
+                    return;
+                }
+
+
+                records.forEach(record => {
+
+                    if (
+                        record.type === categoryManagerType &&
+                        record.category === name
+                    ) {
+
+                        record.category = "其他";
+                    }
+
+                });
+
+
+                saveRecords();
+            }
+
+
+            categories[
+                categoryManagerType
+            ] =
+                categories[
+                    categoryManagerType
+                ].filter(
+                    category =>
+                        category !== name
+                );
+
+
+            saveCategories();
+
+            render();
+
+            showToast(
+                "分類已刪除"
+            );
+        }
+
+
+        /* =========================================================
+           Toast
+        ========================================================= */
+
+        let toastTimer = null;
+
+
+        function showToast(message) {
+
+            const toast =
+                document.getElementById(
+                    "toast"
+                );
+
+
+            toast.textContent =
+                message;
+
+
+            toast.classList.add(
+                "show"
+            );
+
+
+            clearTimeout(
+                toastTimer
+            );
+
+
+            toastTimer =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove(
+                            "show"
+                        );
+
+                    },
+                    2200
+                );
+        }
+
+
+        /* =========================================================
+           Security / HTML escape
+        ========================================================= */
+
+        function escapeHTML(value) {
+
+            return String(value ?? "")
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+        }
+
+
+        function escapeAttribute(value) {
+
+            return escapeHTML(value);
+        }
+
+
+        /* =========================================================
+           Global functions
+        ========================================================= */
+
+        window.editRecord =
+            function (id) {
+
+                openEntry(id);
+            };
+
+
+        window.askDelete =
+            function (id) {
+
+                askDelete(id);
+            };
+
+
+        /* =========================================================
+           Modal click background
+        ========================================================= */
+
+        document
+            .querySelectorAll(".modal-backdrop")
+            .forEach(
+                backdrop => {
+
+                    backdrop.addEventListener(
+                        "click",
+                        function (event) {
+
+                            if (
+                                event.target === backdrop
+                            ) {
+
+                                backdrop.classList.remove(
+                                    "show"
+                                );
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+        /* =========================================================
+           ESC
+        ========================================================= */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key !== "Escape") {
+                    return;
+                }
+
+
+                document
+                    .querySelectorAll(
+                        ".modal-backdrop.show"
+                    )
+                    .forEach(
+                        modal =>
+                            modal.classList.remove(
+                                "show"
+                            )
+                    );
+
+            }
+        );
+
+
+        /* =========================================================
+           Resize
+        ========================================================= */
+
+        window.addEventListener(
+            "resize",
+            function () {
+
+                renderDonut();
+
+                renderChart();
+
+            }
+        );
+
+
+        /* =========================================================
+           Start
+        ========================================================= */
+
+        render();
+
+    </script>
+
+</body>
+
+</html>
