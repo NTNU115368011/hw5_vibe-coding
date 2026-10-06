@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易記帳系統</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
+            background: #0f1117;
+            color: #f1f3f5;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: min(1100px, 92%);
+            margin: 0 auto;
+            padding: 35px 0 60px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .logo p {
+            color: #8b93a1;
+            font-size: 14px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: #ffffff;
+            color: #111318;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+        }
+
+        /* Summary */
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #171a22;
+            border: 1px solid #292e38;
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .summary-title {
+            color: #8b93a1;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .summary-value {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .income {
+            color: #45d483;
+        }
+
+        .expense {
+            color: #ff6678;
+        }
+
+        .balance {
+            color: #6ea8fe;
+        }
+
+        /* Records */
+        .records-card {
+            margin-top: 20px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            font-size: 18px;
+        }
+
+        .record {
+            display: grid;
+            grid-template-columns: 110px 100px 1fr 120px 100px;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #292e38;
+        }
+
+        .record:last-child {
+            border-bottom: none;
+        }
+
+        .record-date {
+            color: #9ba3b0;
+            font-size: 13px;
+        }
+
+        .category {
+            display: inline-block;
+            background: #222731;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            width: fit-content;
+        }
+
+        .note {
+            color: #dce0e6;
+            font-size: 14px;
+        }
+
+        .amount {
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .action-btn {
+            width: 34px;
+            height: 32px;
+            border: 1px solid #303641;
+            background: #1d222b;
+            color: white;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #292f3a;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #858d9a;
+        }
+
+        .empty-icon {
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        /* Modal */
+        .modal-bg {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .modal-bg.active {
+            display: flex;
+        }
+
+        .modal {
+            width: min(500px, 100%);
+            background: #171a22;
+            border: 1px solid #303641;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+        }
+
+        .close {
+            border: none;
+            background: none;
+            color: #9ba3b0;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #aeb6c2;
+            margin-bottom: 7px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid #303641;
+            background: #0f1218;
+            color: white;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #6ea8fe;
+        }
+
+        .type-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .type-btn {
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid #303641;
+            background: #101319;
+            color: #aeb6c2;
+            cursor: pointer;
+        }
+
+        .type-btn.active-expense {
+            background: rgba(255, 102, 120, 0.12);
+            border-color: #ff6678;
+            color: #ff8b98;
+        }
+
+        .type-btn.active-income {
+            background: rgba(69, 212, 131, 0.12);
+            border-color: #45d483;
+            color: #45d483;
+        }
+
+        .error {
+            color: #ff6678;
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 16px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 22px;
+        }
+
+        .btn-cancel {
+            background: #242933;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ff6678;
+            color: white;
+        }
+
+        .confirm-text {
+            color: #b4bcc8;
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .record {
+                grid-template-columns: 1fr auto;
+                gap: 8px;
+            }
+
+            .record .category {
+                order: 2;
+            }
+
+            .record .note {
+                order: 3;
+            }
+
+            .record .amount {
+                order: 4;
+            }
+
+            .record .actions {
+                order: 5;
+            }
+
+            .record-date {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 500px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <h1>💰 簡易記帳</h1>
+                <p>簡單記錄每一筆收入與支出</p>
+            </div>
+
+            <button class="btn btn-primary" id="addBtn">
+                ＋ 新增記帳
+            </button>
+        </header>
+
+        <!-- Summary -->
+        <section class="summary">
+
+            <div class="card">
+                <div class="summary-title">本月收入</div>
+                <div class="summary-value income" id="monthIncome">
+                    $0
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="summary-title">本月支出</div>
+                <div class="summary-value expense" id="monthExpense">
+                    $0
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="summary-title">本月結餘</div>
+                <div class="summary-value balance" id="monthBalance">
+                    $0
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Records -->
+        <section class="card records-card">
+
+            <div class="section-title">
+                <h2>最近記帳</h2>
+            </div>
+
+            <div id="recordList"></div>
+
+        </section>
+
+    </div>
+
+
+    <!-- 新增 / 編輯 Modal -->
+    <div class="modal-bg" id="entryModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+                <h2 id="modalTitle">新增記帳</h2>
+                <button class="close" id="closeEntry">×</button>
+            </div>
+
+            <form id="entryForm">
+
+                <!-- 日期 -->
+                <div class="form-group">
+
+                    <label>日期 *</label>
+
+                    <input type="date" id="date">
+
+                    <div class="error" id="dateError"></div>
+
+                </div>
+
+
+                <!-- 金額 -->
+                <div class="form-group">
+
+                    <label>金額 *</label>
+
+                    <input type="number" id="amount" placeholder="請輸入金額" min="0.01" step="0.01">
+
+                    <div class="error" id="amountError"></div>
+
+                </div>
+
+
+                <!-- 類型 -->
+                <div class="form-group">
+
+                    <label>類型 *</label>
+
+                    <div class="type-buttons">
+
+                        <button type="button" class="type-btn active-expense" id="expenseBtn">
+                            支出
+                        </button>
+
+                        <button type="button" class="type-btn" id="incomeBtn">
+                            收入
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- 分類 -->
+                <div class="form-group">
+
+                    <label>分類 *</label>
+
+                    <select id="category"></select>
+
+                    <div class="error" id="categoryError"></div>
+
+                </div>
+
+
+                <!-- 備註 -->
+                <div class="form-group">
+
+                    <label>備註</label>
+
+                    <input type="text" id="note" placeholder="例如：午餐">
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-cancel" id="cancelEntry">
+                        取消
+                    </button>
+
+                    <button type="submit" class="btn btn-primary" id="saveBtn">
+                        新增記帳
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- 刪除確認 Modal -->
+    <div class="modal-bg" id="deleteModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+                <h2>確認刪除</h2>
+
+                <button class="close" id="closeDelete">
+                    ×
+                </button>
+            </div>
+
+            <p class="confirm-text">
+                確定要刪除這筆記帳紀錄嗎？<br>
+                刪除後將無法復原。
+            </p>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-cancel" id="cancelDelete">
+                    取消
+                </button>
+
+                <button class="btn btn-danger" id="confirmDelete">
+                    確認刪除
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        /* =========================
+           基本資料
+        ========================= */
+
+        const STORAGE_KEY = "simpleLedger";
+
+        let records = [];
+
+        let currentType = "expense";
+
+        let editingId = null;
+
+        let deletingId = null;
+
+
+        const categories = {
+
+            expense: [
+                {
+                    id: "food",
+                    name: "🍜 飲食"
+                },
+                {
+                    id: "transport",
+                    name: "🚇 交通"
+                },
+                {
+                    id: "shopping",
+                    name: "🛍️ 購物"
+                },
+                {
+                    id: "entertainment",
+                    name: "🎬 娛樂"
+                },
+                {
+                    id: "study",
+                    name: "📚 學習"
+                },
+                {
+                    id: "life",
+                    name: "🏠 生活"
+                },
+                {
+                    id: "other",
+                    name: "📦 其他"
+                }
+            ],
+
+            income: [
+                {
+                    id: "salary",
+                    name: "💰 薪資"
+                },
+                {
+                    id: "gift",
+                    name: "🎁 禮金"
+                },
+                {
+                    id: "other",
+                    name: "➕ 其他收入"
+                }
+            ]
+
+        };
+
+
+        /* =========================
+           DOM
+        ========================= */
+
+        const addBtn =
+            document.getElementById("addBtn");
+
+        const entryModal =
+            document.getElementById("entryModal");
+
+        const deleteModal =
+            document.getElementById("deleteModal");
+
+        const entryForm =
+            document.getElementById("entryForm");
+
+        const recordList =
+            document.getElementById("recordList");
+
+        const category =
+            document.getElementById("category");
+
+        const expenseBtn =
+            document.getElementById("expenseBtn");
+
+        const incomeBtn =
+            document.getElementById("incomeBtn");
+
+
+        /* =========================
+           LocalStorage
+        ========================= */
+
+        function loadData() {
+
+            try {
+
+                const data =
+                    localStorage.getItem(STORAGE_KEY);
+
+                if (data) {
+
+                    const parsed =
+                        JSON.parse(data);
+
+                    if (Array.isArray(parsed)) {
+
+                        records = parsed;
+
+                    }
+
+                }
+
+            } catch (error) {
+
+                records = [];
+
+            }
+
+        }
+
+
+        function saveData() {
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(records)
+            );
+
+        }
+
+
+        /* =========================
+           初始化
+        ========================= */
+
+        function init() {
+
+            loadData();
+
+            setToday();
+
+            updateCategories();
+
+            render();
+
+        }
+
+
+        function setToday() {
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+            document.getElementById("date").value =
+                today;
+
+        }
+
+
+        /* =========================
+           類型
+        ========================= */
+
+        expenseBtn.addEventListener(
+            "click",
+            function () {
+
+                currentType = "expense";
+
+                expenseBtn.className =
+                    "type-btn active-expense";
+
+                incomeBtn.className =
+                    "type-btn";
+
+                updateCategories();
+
+            }
+        );
+
+
+        incomeBtn.addEventListener(
+            "click",
+            function () {
+
+                currentType = "income";
+
+                incomeBtn.className =
+                    "type-btn active-income";
+
+                expenseBtn.className =
+                    "type-btn";
+
+                updateCategories();
+
+            }
+        );
+
+
+        function updateCategories() {
+
+            category.innerHTML = "";
+
+            categories[currentType].forEach(
+                function (item) {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = item.id;
+
+                    option.textContent = item.name;
+
+                    category.appendChild(option);
+
+                }
+            );
+
+        }
+
+
+        /* =========================
+           開啟新增
+        ========================= */
+
+        addBtn.addEventListener(
+            "click",
+            function () {
+
+                editingId = null;
+
+                document.getElementById("modalTitle")
+                    .textContent = "新增記帳";
+
+                document.getElementById("saveBtn")
+                    .textContent = "新增記帳";
+
+                entryForm.reset();
+
+                currentType = "expense";
+
+                expenseBtn.className =
+                    "type-btn active-expense";
+
+                incomeBtn.className =
+                    "type-btn";
+
+                setToday();
+
+                updateCategories();
+
+                clearErrors();
+
+                entryModal.classList.add("active");
+
+            }
+        );
+
+
+        /* =========================
+           關閉 Modal
+        ========================= */
+
+        document.getElementById("closeEntry")
+            .addEventListener(
+                "click",
+                closeEntry
+            );
+
+        document.getElementById("cancelEntry")
+            .addEventListener(
+                "click",
+                closeEntry
+            );
+
+
+        function closeEntry() {
+
+            entryModal.classList.remove("active");
+
+        }
+
+
+        /* =========================
+           新增 / 編輯
+        ========================= */
+
+        entryForm.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+                clearErrors();
+
+                const date =
+                    document.getElementById("date").value;
+
+                const amount =
+                    Number(
+                        document.getElementById("amount").value
+                    );
+
+                const note =
+                    document.getElementById("note").value
+                        .trim();
+
+                const selectedCategory =
+                    category.value;
+
+
+                let valid = true;
+
+
+                if (!date) {
+
+                    document.getElementById("dateError")
+                        .textContent =
+                        "請選擇日期。";
+
+                    valid = false;
+
+                }
+
+
+                if (!amount || amount <= 0) {
+
+                    document.getElementById("amountError")
+                        .textContent =
+                        "金額必須大於 0。";
+
+                    valid = false;
+
+                }
+
+
+                if (!selectedCategory) {
+
+                    document.getElementById("categoryError")
+                        .textContent =
+                        "請選擇分類。";
+
+                    valid = false;
+
+                }
+
+
+                if (!valid) {
+
+                    return;
+
+                }
+
+
+                if (editingId) {
+
+                    const record =
+                        records.find(
+                            item => item.id === editingId
+                        );
+
+                    if (record) {
+
+                        record.date = date;
+
+                        record.amount = amount;
+
+                        record.type = currentType;
+
+                        record.category =
+                            selectedCategory;
+
+                        record.note = note;
+
+                    }
+
+                } else {
+
+                    const newRecord = {
+
+                        id:
+                            Date.now().toString(),
+
+                        date: date,
+
+                        amount: amount,
+
+                        type: currentType,
+
+                        category:
+                            selectedCategory,
+
+                        note: note
+
+                    };
+
+                    records.push(newRecord);
+
+                }
+
+
+                saveData();
+
+                closeEntry();
+
+                render();
+
+            }
+        );
+
+
+        /* =========================
+           編輯
+        ========================= */
+
+        function editRecord(id) {
+
+            const record =
+                records.find(
+                    item => item.id === id
+                );
+
+            if (!record) return;
+
+
+            editingId = id;
+
+
+            document.getElementById("modalTitle")
+                .textContent = "編輯記帳";
+
+            document.getElementById("saveBtn")
+                .textContent = "儲存修改";
+
+
+            document.getElementById("date").value =
+                record.date;
+
+            document.getElementById("amount").value =
+                record.amount;
+
+            document.getElementById("note").value =
+                record.note || "";
+
+
+            currentType =
+                record.type;
+
+
+            if (currentType === "expense") {
+
+                expenseBtn.className =
+                    "type-btn active-expense";
+
+                incomeBtn.className =
+                    "type-btn";
+
+            } else {
+
+                incomeBtn.className =
+                    "type-btn active-income";
+
+                expenseBtn.className =
+                    "type-btn";
+
+            }
+
+
+            updateCategories();
+
+            category.value =
+                record.category;
+
+
+            clearErrors();
+
+            entryModal.classList.add("active");
+
+        }
+
+
+        /* =========================
+           刪除
+        ========================= */
+
+        function deleteRecord(id) {
+
+            deletingId = id;
+
+            deleteModal.classList.add("active");
+
+        }
+
+
+        document.getElementById("closeDelete")
+            .addEventListener(
+                "click",
+                function () {
+
+                    deleteModal.classList.remove(
+                        "active"
+                    );
+
+                }
+            );
+
+
+        document.getElementById("cancelDelete")
+            .addEventListener(
+                "click",
+                function () {
+
+                    deleteModal.classList.remove(
+                        "active"
+                    );
+
+                }
+            );
+
+
+        document.getElementById("confirmDelete")
+            .addEventListener(
+                "click",
+                function () {
+
+                    records =
+                        records.filter(
+                            item => item.id !== deletingId
+                        );
+
+                    saveData();
+
+                    deleteModal.classList.remove(
+                        "active"
+                    );
+
+                    deletingId = null;
+
+                    render();
+
+                }
+            );
+
+
+        /* =========================
+           Dashboard
+        ========================= */
+
+        function render() {
+
+            renderSummary();
+
+            renderRecords();
+
+        }
+
+
+        function renderSummary() {
+
+            const now =
+                new Date();
+
+            const currentYear =
+                now.getFullYear();
+
+            const currentMonth =
+                now.getMonth() + 1;
+
+
+            let income = 0;
+
+            let expense = 0;
+
+
+            records.forEach(
+                function (record) {
+
+                    const date =
+                        new Date(record.date);
+
+                    if (
+                        date.getFullYear() ===
+                        currentYear &&
+                        date.getMonth() + 1 ===
+                        currentMonth
+                    ) {
+
+                        if (record.type === "income") {
+
+                            income +=
+                                Number(record.amount);
+
+                        } else {
+
+                            expense +=
+                                Number(record.amount);
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+            const balance =
+                income - expense;
+
+
+            document.getElementById(
+                "monthIncome"
+            ).textContent =
+                "$" + formatMoney(income);
+
+
+            document.getElementById(
+                "monthExpense"
+            ).textContent =
+                "$" + formatMoney(expense);
+
+
+            document.getElementById(
+                "monthBalance"
+            ).textContent =
+                (balance < 0 ? "-$" : "$") +
+                formatMoney(Math.abs(balance));
+
+        }
+
+
+        /* =========================
+           紀錄列表
+        ========================= */
+
+        function renderRecords() {
+
+            if (records.length === 0) {
+
+                recordList.innerHTML = `
+                <div class="empty">
+                    <div class="empty-icon">📋</div>
+                    <div>
+                        目前還沒有任何記帳紀錄
+                    </div>
+                    <div style="margin-top:6px;">
+                        點擊「＋ 新增記帳」開始記帳
+                    </div>
+                </div>
+            `;
+
+                return;
+
+            }
+
+
+            const sorted =
+                [...records].sort(
+                    function (a, b) {
+
+                        return b.date.localeCompare(
+                            a.date
+                        );
+
+                    }
+                );
+
+
+            recordList.innerHTML = "";
+
+
+            sorted.forEach(
+                function (record) {
+
+                    const categoryData =
+                        categories[record.type]
+                            .find(
+                                item =>
+                                    item.id ===
+                                    record.category
+                            );
+
+
+                    const categoryName =
+                        categoryData
+                            ? categoryData.name
+                            : "其他";
+
+
+                    const row =
+                        document.createElement("div");
+
+                    row.className =
+                        "record";
+
+
+                    row.innerHTML = `
+
+                    <div class="record-date">
+                        ${formatDate(record.date)}
+                    </div>
+
+                    <div>
+                        <span class="category">
+                            ${categoryName}
+                        </span>
+                    </div>
+
+                    <div class="note">
+                        ${record.note || "無備註"}
+                    </div>
+
+                    <div class="
+                        amount
+                        ${record.type === "income"
+                            ? "income"
+                            : "expense"}
+                    ">
+                        ${record.type === "income"
+                            ? "+$"
+                            : "-$"}
+                        ${formatMoney(record.amount)}
+                    </div>
+
+                    <div class="actions">
+
+                        <button
+                            class="action-btn"
+                            onclick="editRecord('${record.id}')"
+                            title="編輯"
+                        >
+                            ✏️
+                        </button>
+
+                        <button
+                            class="action-btn"
+                            onclick="deleteRecord('${record.id}')"
+                            title="刪除"
+                        >
+                            🗑️
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                    recordList.appendChild(row);
+
+                }
+            );
+
+        }
+
+
+        /* =========================
+           工具
+        ========================= */
+
+        function formatMoney(number) {
+
+            return Number(number)
+                .toLocaleString(
+                    "zh-TW",
+                    {
+                        maximumFractionDigits: 2
+                    }
+                );
+
+        }
+
+
+        function formatDate(date) {
+
+            const parts =
+                date.split("-");
+
+            return `${parts[0]}/${parts[1]}/${parts[2]}`;
+
+        }
+
+
+        function clearErrors() {
+
+            document.getElementById("dateError")
+                .textContent = "";
+
+            document.getElementById("amountError")
+                .textContent = "";
+
+            document.getElementById("categoryError")
+                .textContent = "";
+
+        }
+
+
+        /* =========================
+           啟動
+        ========================= */
+
+        init();
+
+    </script>
+
+</body>
+
+</html>
